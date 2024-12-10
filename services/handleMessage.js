@@ -9,7 +9,10 @@ export const handleMessage = (message) => {
             Clipboard.setStringAsync(message);
             console.log('Texto copiado en el portapapeles:', message);
             return;
-        } 
+        }else{
+            console.log('Mensaje no es de texto:', message);
+            return;
+        }
     } catch (error) {
         console.log('Error al parsear el mensaje:', error);
         return;

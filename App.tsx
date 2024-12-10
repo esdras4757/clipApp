@@ -7,6 +7,8 @@
 
 import React, {useRef} from 'react';
 import type {PropsWithChildren} from 'react';
+import BackgroundFetch from "react-native-background-fetch";
+
 import {
   Button,
   Image,
@@ -48,10 +50,46 @@ function App(): React.JSX.Element {
     content: '',
     type: '',
   });
-
+  const [counter, setCounter] = useState(0);
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+
+  const incrementCounterInBackground = () => {
+    setCounter((prevCounter) => prevCounter + 1);
+    console.log("Counter incremented in background:", counter + 1);
+  };
+  useEffect(() => {
+
+    console.log('Iniciando la app');
+    // Configuración del Background Fetch
+    BackgroundFetch.configure(
+      {
+        minimumFetchInterval: 15, // Intervalo mínimo de ejecución (en minutos)
+        stopOnTerminate: false,  // Continuar ejecutándose cuando la app está cerrada
+        startOnBoot: true,       // Reiniciar la tarea al reiniciar el dispositivo
+      },
+      async (taskId) => {
+        console.log("[BackgroundFetch] Task started:", taskId);
+        incrementCounterInBackground();
+        BackgroundFetch.finish(taskId);
+      },
+      (error) => {
+        console.error("[BackgroundFetch] Failed to configure:", error);
+      }
+    );
+
+   
+
+    // Iniciar el Background Fetch
+    BackgroundFetch.start();
+
+    return () => {
+      // Limpiar recursos si el componente se desmonta
+      BackgroundFetch.stop();
+    };
+  }, []);
+
 
   useEffect(() => {
     if (clipboardContent.content !== '') {
@@ -59,6 +97,7 @@ function App(): React.JSX.Element {
         sendText(clipboardContent.content);
       }
     }
+
   }, [clipboardContent]);
 
   function base64ToArrayBuffer(base64: any) {
